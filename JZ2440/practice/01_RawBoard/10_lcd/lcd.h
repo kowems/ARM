@@ -36,3 +36,5 @@
 #define LCD_FRAME_BUFFER 0x30400000
 
 #define OFFSIZE (0)
+
+#define PALETTE 0x4d000400

@@ -17,6 +17,18 @@
 #define		UINT8	unsigned char
 #endif
 
+#ifndef INT32
+#define		INT32	int
+#endif
+
+#ifndef INT16
+#define		INT16	short
+#endif
+
+#ifndef INT8
+#define		INT8	char
+#endif
+
 #ifndef _SIZE_T
 #define _SIZE_T
 typedef unsigned int size_t;
