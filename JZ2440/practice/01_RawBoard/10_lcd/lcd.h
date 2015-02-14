@@ -1,3 +1,5 @@
+#include<types.h>
+
 #define LOWER_21BITS(n) ((n)&0x1fffff)
 
 #define CLKVAL_240_320 (4)
@@ -21,6 +23,7 @@
 
 #define HBPD_240_320 ((11-1)&0x7f)
 
+
 #define HFPD_240_320 ((2-1)&0xff)
 
 #define HSPW_240_320 ((1-1)&0xff)
@@ -38,3 +41,15 @@
 #define OFFSIZE (0)
 
 #define PALETTE 0x4d000400
+
+#define MODE_8BIT_240_320 0x4102
+#define MODE_16BIT_240_320 0x4104
+
+#define MODE_8BIT_640_480 0x4202
+#define MODE_16BIT_640_480 0x4204
+
+void lcd_port_init(void);
+void tft_lcd_init(int type);
+void lcd_power_enable(int invpwren,int pwren);
+void lcd_envid_on_off(int on_off);
+void lcd_palette_8Bit_init(void);

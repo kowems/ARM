@@ -6,17 +6,30 @@
 #define SDRAM_BASE      0x30000000
 
 /* GPIO registers */
+#define GPBCON      (*(volatile unsigned long *)0x56000010)
+#define GPBDAT      (*(volatile unsigned long *)0x56000014)
+#define GPBUP       (*(volatile unsigned long *)0x56000018)
+
+#define GPCCON      (*(volatile unsigned long *)0x56000020)
+#define GPCDAT      (*(volatile unsigned long *)0x56000024)
+#define GPCUP       (*(volatile unsigned long *)0x56000028)
+
+#define GPDCON      (*(volatile unsigned long *)0x56000030)
+#define GPDDAT      (*(volatile unsigned long *)0x56000034)
+#define GPDUP       (*(volatile unsigned long *)0x56000038)
+
 #define GPFCON      (*(volatile unsigned long *)0x56000050)
 #define GPFDAT      (*(volatile unsigned long *)0x56000054)
 #define GPFUP       (*(volatile unsigned long *)0x56000058)
+
+#define GPGCON      (*(volatile unsigned long *)0x56000060)
+#define GPGDAT      (*(volatile unsigned long *)0x56000064)
+#define GPGUP       (*(volatile unsigned long *)0x56000068)
 
 #define GPHCON      (*(volatile unsigned long *)0x56000070)
 #define GPHDAT      (*(volatile unsigned long *)0x56000074)
 #define GPHUP       (*(volatile unsigned long *)0x56000078)
 
-#define GPGCON      (*(volatile unsigned long *)0x56000060)
-#define GPGDAT      (*(volatile unsigned long *)0x56000064)
-#define GPGUP       (*(volatile unsigned long *)0x56000068)
 /* interrupt registers */
 #define SRCPND      (*(volatile unsigned long *)0x4A000000)
 #define INTMOD      (*(volatile unsigned long *)0x4A000004)
@@ -63,3 +76,18 @@
 #define NFSECC      (*(volatile unsigned long *)0x4e000034)
 #define NFSBLK      (*(volatile unsigned long *)0x4e000038)
 #define NFEBLK      (*(volatile unsigned long *)0x4e00003c)
+
+/* LCD CONTROLLER */
+#define LCDCON1     (*(volatile unsigned long *)0x4d000000)
+#define LCDCON2     (*(volatile unsigned long *)0x4d000004)
+#define LCDCON3     (*(volatile unsigned long *)0x4d000008)
+#define LCDCON4     (*(volatile unsigned long *)0x4d00000c)
+#define LCDCON5     (*(volatile unsigned long *)0x4d000010)
+#define LCDSADDR1   (*(volatile unsigned long *)0x4d000014)
+#define LCDSADDR2   (*(volatile unsigned long *)0x4d000018)
+#define LCDSADDR3   (*(volatile unsigned long *)0x4d00001c)
+#define REDLUT      (*(volatile unsigned long *)0x4d000020)
+#define GREENLUT    (*(volatile unsigned long *)0x4d000024)
+#define BLUELUT     (*(volatile unsigned long *)0x4d000028)
+#define DITHMODE    (*(volatile unsigned long *)0x4d00004c)
+#define TPAL        (*(volatile unsigned long *)0x4d000050)

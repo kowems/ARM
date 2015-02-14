@@ -9,11 +9,12 @@
 
 extern int printf(const char *fmt, ...);
 
+#define RXD0READY   (1)
+
 #define PCLK        50000000
 #define UART_CLK    PCLK
 #define UART_BAUD_RATE  115200
-#define UART_BRD    ((UART_CLK / (UART_BAUD_RATE * 16)) - 1)
-#define RXD0READY   (1) 
+#define UART_BRD        ((UART_CLK / (UART_BAUD_RATE * 16)) - 1)
 
 #define TX_BUF_LEN 2048
 
@@ -87,13 +88,12 @@ void uart_irq(void)
                 break;
         }
         SUBSRCPND |= 1 << 1;
-#if 1
+#if 0
     }else if(SUBSRCPND & (0x1 << 0)) { // receive interrupt
 #else
     }else { // receive interrupt
 #endif
         led_on();
-        /* Can not receive any input on serial,I do not know why. */
         /* need more code to do receive action */
         SUBSRCPND |= 1 << 0;
     }
@@ -134,6 +134,6 @@ void putc(char c)
 unsigned char getc(void)
 {
     while(!(UTRSTAT0 & RXD0READY));
-    
+
     return URXH0;
 }

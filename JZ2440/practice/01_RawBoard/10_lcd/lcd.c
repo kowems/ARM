@@ -1,7 +1,10 @@
+#include"s3c2440.h"
 #include"lcd.h"
 
 #define GPB0_MSK (3 << (0*2))
 #define GPB1_OUT (1 << (0*2))
+
+#define GPB0_OUT (1 << (0*2))
 
 unsigned int fb_base_addr;
 unsigned int bpp;
@@ -32,7 +35,7 @@ void tft_lcd_init(int type)
 {
     switch(type)
     {
-        case 8BIT_240_320:
+        case MODE_8BIT_240_320:
             LCDCON1 = (CLKVAL_240_320 << 8) | (LCD_TYPE_TFT << 5) | \
                       (BPP_MODE_8BPP << 1) | (ENVID_DISABLE << 0);
             LCDCON2 = (VBPD_240_320 << 24) | (LINE_VAL_TFT_240_320 << 14) | \
@@ -58,11 +61,11 @@ void tft_lcd_init(int type)
             ysize = 320;
 
             break;
-        case 16BIT_240_320:
+        case MODE_16BIT_240_320:
             break;
-        case 8BIT_640_480:
+        case MODE_8BIT_640_480:
             break;
-        case 16BIT_640_480:
+        case MODE_16BIT_640_480:
             break;
         default:
             break;

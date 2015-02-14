@@ -9,7 +9,7 @@ FLAGS := -Wall -O2 -nostdinc -I$(INCLUDEDIR)
 
 export CC LD AR OBJCOPY OBJDUMP INCLUDEDIR FLAGS
 
-objs := head.o init.o uart.o nand.o main.o interrupt.o led.o lib/libc.a
+objs := head.o init.o uart.o nand.o main.o interrupt.o led.o lib/libc.a frameBuffer.o lcdLib.o lcd.o
 
 elf = lcd.elf
 
