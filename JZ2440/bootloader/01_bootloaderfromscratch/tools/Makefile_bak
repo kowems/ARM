@@ -1,0 +1,17 @@
+objs := string.o
+libs := libc.a
+
+tool.a: $(objs) $(libs)
+	$(AR) -x $(libs)
+	$(AR) -r -o $@ *.o
+
+%.o:%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+.PHONY : $(libs)
+$(libs):
+	cd lib;make;mv libc.a ..;cd ..
+
+clean:
+	cd lib;make clean;cd ..
+	rm $(objs) $(libs)
