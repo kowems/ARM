@@ -1,3 +1,21 @@
+/*
+ * uart - uart code for ARM 2440
+ *
+ * Copyright (c) 2015 Eric Ju <Eric.X.Ju@gmail.com>
+ * 
+ * This program is free software;you can registribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation;Either version 2 of
+ * the License,or (at your option) any later version.
+ *
+ */
+
+/*                  History
+ *
+ *   01/15/2015 Eric: initialization creation
+ *
+ */
+
 /**********************************************************
  *
  * File: uart.c
@@ -29,6 +47,7 @@ struct ringBuf tx_buf = {tb,0,0};
 
 static int getData(unsigned char *pData);
 
+#ifdef ENABLE_IRQ
 void uart_init(void)
 {
     //GPHCON &= ~((0x3 << 4) | (0x3 << 6));
@@ -50,6 +69,20 @@ void uart_init(void)
 
     INTSUBMSK &= ~0x1;
 }
+#else
+// It is non-irq mode
+void uart_init(void)
+{
+    GPHCON  |= 0xa0;    // make GPH2,GPH3 as TXD0,RXD0
+    GPHUP   = 0x0c;     // GPH2,GPH3 pull-up resistor
+
+    ULCON0  = 0x03;     // 8N1(8 data bit,no parity bit,1 stop bit)
+    UCON0   = 0x05;     // polling mode,UART clock source is PCLK
+    UFCON0  = 0x00;     // unuse FIFO
+    UMCON0  = 0x00;     // unuse fluid control
+    UBRDIV0 = UART_BRD; // set baut rate as 115200
+}
+#endif
 
 void uart_disable_tx_irq(void)
 {
@@ -88,7 +121,7 @@ void uart_irq(void)
                 break;
         }
         SUBSRCPND |= 1 << 1;
-#if 0
+#if 1
     }else if(SUBSRCPND & (0x1 << 0)) { // receive interrupt
 #else
     }else { // receive interrupt
@@ -124,7 +157,7 @@ static int putData(unsigned char data)
         return -1;
     }
 }
-#if 0
+#ifdef ENABLE_IRQ
 void putc(char c)
 {
     putData(c);
@@ -132,6 +165,7 @@ void putc(char c)
     uart_enable_tx_irq();
 }
 #else
+// It is non-irq mode.
 void putc(unsigned char c)
 {
     while(!(UTRSTAT0 & TXD0READY));
@@ -140,10 +174,33 @@ void putc(unsigned char c)
 }
 #endif
 
+#ifdef ENABLE_IRQ
+#else
 unsigned char getc(void)
 {
     while(!(UTRSTAT0 & RXD0READY));
 
     return URXH0;
 }
+#endif
 
+void puthex(unsigned int val)
+{
+	/* 0x1234abcd */
+	int i;
+	int j;
+	
+	putc('0');
+	putc('x');
+
+	for (i = 0; i < 8; i++)
+	{
+		j = (val >> ((7-i)*4)) & 0xf;
+		if ((j >= 0) && (j <= 9))
+			putc('0' + j);
+		else
+			putc('A' + j - 0xa);
+		
+	}
+	
+}

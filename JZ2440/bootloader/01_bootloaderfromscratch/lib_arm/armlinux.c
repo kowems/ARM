@@ -1,3 +1,21 @@
+/*
+ * armlinux - armlinux code for ARM 2440
+ *
+ * Copyright (c) 2015 Eric Ju <Eric.X.Ju@gmail.com>
+ * 
+ * This program is free software;you can registribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation;Either version 2 of
+ * the License,or (at your option) any later version.
+ *
+ */
+
+/*                  History
+ *
+ *   02/14/2015 Eric: initialization creation
+ *
+ */
+
 #include<linux/string.h>
 #include<asm/setup.h>
 
@@ -28,7 +46,9 @@ static void setup_memory_tags(void)
 }
 static void setup_commandline_tag(char *commandline)
 {
-    char *p;
+    // did not set p with commandline,so system can not boot,when kernel start up.
+    // only print "uncompressing kernel.....................................",display device is light.
+    char *p = commandline;
 
     if(!commandline)
         return;

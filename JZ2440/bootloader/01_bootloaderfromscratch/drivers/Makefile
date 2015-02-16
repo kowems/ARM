@@ -16,4 +16,4 @@ uart.a:
 clean:
 	cd nand;make clean;cd ..
 	cd uart;make clean;cd ..
-	rm -f *.a
+	rm -f *.a *.o

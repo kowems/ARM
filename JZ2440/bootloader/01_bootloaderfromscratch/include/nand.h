@@ -19,4 +19,4 @@
 /* init nand flash chip */
 void nand_init(void);
 /* read nand flash */
-void nand_read(unsigned char *buf,unsigned long start_addr,int size);
+void nand_read(unsigned char *buf,unsigned int start_addr,unsigned int size);

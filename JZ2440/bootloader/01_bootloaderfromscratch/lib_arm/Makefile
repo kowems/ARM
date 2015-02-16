@@ -7,4 +7,4 @@ lib_arm.a:$(objs)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f lib_arm.a $(objs)
+	rm -f *.a *.o

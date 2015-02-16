@@ -53,6 +53,7 @@
 #define ULCON0      (*(volatile unsigned long *)0x50000000)
 #define UCON0       (*(volatile unsigned long *)0x50000004)
 #define UFCON0      (*(volatile unsigned long *)0x50000008)
+#define UMCON0      (*(volatile unsigned long *)0x5000000c)
 #define UTRSTAT0    (*(volatile unsigned long *)0x50000010)
 #define UFSTAT0     (*(volatile unsigned long *)0x50000018)
 #define UTXH0       (*(volatile unsigned long *)0x50000020)

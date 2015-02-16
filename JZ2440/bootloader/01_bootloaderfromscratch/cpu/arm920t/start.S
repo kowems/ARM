@@ -18,29 +18,25 @@
 
 #define S3C2440_MPLL_400MHz ((0x5c << 12) | (0x01 << 4) | (0x01 << 0))
 
+#define S3C2440_MPLL_200MHz ((0x5c << 12) | (0x01 << 4) | (0x02 << 0))
+
 .text
 .global _start
 _start: 
     b reset
 
-HandleUndef:
     b HandleUndef
 
-HandleSWI:
     b HandleSWI
 
-HandlePrefetchAbort:
     b HandlePrefetchAbort
 
-HandleDataAbort:
     b HandleDataAbort
 
-HandleNotUsed:
     b HandleNotUsed
 
     b HandleIRQ
 
-HandleFIQ:
     b HandleFIQ
 
 /* switch cpu to supervisor mode */
@@ -49,21 +45,27 @@ reset:
     bic r0,r0,#0x1f /* clear low 5 bit */
     orr r0,r0,#0xd3 /* logic OR */
     msr cpsr,r0
+
 /* disable watch dog */
     ldr r0, =0x53000000
     mov r1,#0
     str r1,[r0]
+
 /* setup clock */
     ldr r0,=0x4c000014
     mov r1,#0x05    /* FCLK:HCLK:PCLK=1:4:8,HDIVN=1,PDIVN=1 */
+    #mov r1,#0x03    /* FCLK:HCLK:PCLK=1:2:4,HDIVN=1,PDIVN=1 */
     str r1,[r0]
+
     // set cpu bus mode as asynchronous
     mrc p15,0,r1,c1,c0,0
     orr r1,r1,#0xc0000000
     mcr p15,0,r1,c1,c0,0
+
     // set frequency division (MDIV,PDIV,SDIV)
     ldr r0,=0x4c000004
     ldr r1,=S3C2440_MPLL_400MHz
+    #ldr r1,=S3C2440_MPLL_200MHz
     str r1,[r0]
 
 /* initialize SDRAM */
@@ -78,14 +80,11 @@ reset:
 
 /* setup stack */
     bl setup_stack   // prepare for calling c function
-/* setup interrupt */
-    #bl irq_init
-    #msr cpsr,#0x53
 /* initialize nand */
     bl nand_init
 
 /* relocate */
-    mov r0,#0;
+    mov r0,#0
     ldr r1,=_start
     ldr r2,=__bss_start
     sub r2,r2,r1
@@ -95,11 +94,14 @@ reset:
     ldr r0,=__bss_start
     ldr r1,=__bss_end
     mov r2,#0x00000000
-
+    
 clear_bss:
     str r2,[r0],#4
     cmp r0,r1
     ble clear_bss
+
+/* setup interrupt */
+    #bl irq_init
 
 /* run main */
     ldr lr,=halt
@@ -111,6 +113,7 @@ setup_stack:
     ldr sp,=0x34000000
     mov pc,lr
 
+/* exception handling functions */
 HandleIRQ:
     sub lr,lr,#4
     stmdb sp!,{r0-r12,lr}
@@ -118,6 +121,66 @@ HandleIRQ:
     ldr lr,=irq_ret
     ldr pc,=Interrupt_handler
 irq_ret:
+    ldmia sp!,{r0-r12,pc}^
+
+HandleUndef:
+    sub lr,lr,#4
+    stmdb sp!,{r0-r12,lr}
+
+    ldr lr,=und_ret
+    ldr pc,=Interrupt_handler
+
+und_ret:
+    ldmia sp!,{r0-r12,pc}^
+
+HandleSWI:
+    sub lr,lr,#4
+    stmdb sp!,{r0-r12,lr}
+
+    ldr lr,=swi_ret
+    ldr pc,=Interrupt_handler
+
+swi_ret:
+    ldmia sp!,{r0-r12,pc}^
+
+HandlePrefetchAbort:
+    sub lr,lr,#4
+    stmdb sp!,{r0-r12,lr}
+
+    ldr lr,=preAbort_ret
+    ldr pc,=Interrupt_handler
+
+preAbort_ret:
+    ldmia sp!,{r0-r12,pc}^
+
+HandleDataAbort:
+    sub lr,lr,#4
+    stmdb sp!,{r0-r12,lr}
+
+    ldr lr,=dataAbort_ret
+    ldr pc,=Interrupt_handler
+
+dataAbort_ret:
+    ldmia sp!,{r0-r12,pc}^
+
+HandleNotUsed:
+    sub lr,lr,#4
+    stmdb sp!,{r0-r12,lr}
+
+    ldr lr,=notUsed_ret
+    ldr pc,=Interrupt_handler
+
+notUsed_ret:
+    ldmia sp!,{r0-r12,pc}^
+
+HandleFIQ:
+    sub lr,lr,#4
+    stmdb sp!,{r0-r12,lr}
+
+    ldr lr,=fiq_ret
+    ldr pc,=Interrupt_handler
+
+fiq_ret:
     ldmia sp!,{r0-r12,pc}^
 
 /* for debug */
@@ -130,6 +193,7 @@ led_on:
     str r1,[r0]
     mov pc,lr
 
+/* sdram configuration */
 sdram_config:
     .long 0x22011110    //BWSCON
     .long 0x00000700    //BANKCON0

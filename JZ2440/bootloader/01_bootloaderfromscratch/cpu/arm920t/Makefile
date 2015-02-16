@@ -10,4 +10,4 @@ cpu.a: $(objs)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -rf $(objs)
+	rm -rf *.o
