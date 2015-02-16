@@ -68,6 +68,11 @@ reset:
     #ldr r1,=S3C2440_MPLL_200MHz
     str r1,[r0]
 
+    /* enable ICACHE */
+    mrc p15,0,r0,c1,c0,0        @ read control reg
+    orr r0,r0,#(1<<12)          @ Set ICACHE bit
+    mcr p15,0,r0,c1,c0,0        @ write it back
+
 /* initialize SDRAM */
     ldr r0,=0x48000000
     adr r1,sdram_config
