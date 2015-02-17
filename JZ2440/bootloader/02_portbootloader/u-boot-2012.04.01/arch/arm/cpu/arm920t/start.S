@@ -110,6 +110,9 @@ FIQ_STACK_START:
 IRQ_STACK_START_IN:
 	.word	0x0badc0de
 
+.globl base_sp
+base_sp:
+    .long 0
 /*
  * the actual start code
  */
@@ -167,13 +170,30 @@ copyex:
 	str	r1, [r0]
 # endif
 
-	/* FCLK:HCLK:PCLK = 1:2:4 */
-	/* default FCLK is 120 MHz ! */
-	ldr	r0, =CLKDIVN
-	mov	r1, #3
-	str	r1, [r0]
+	/* FCLK:HCLK:PCLK = 1:4:8 */
+    ldr r0,=0x4c000014
+    mov r1,#0x05
+    str r1,[r0]
+
+    mrc p15,0,r1,c1,c0,0
+    orr r1,r1,#0xc0000000
+    mcr p15,0,r1,c1,c0,0
+
+#define S3C2440_MPLL_400MHZ ((0x5c << 12) | (0x01 << 4) | (0x01))
+
+    ldr r0,=0x4c000004
+    ldr r1,=S3C2440_MPLL_400MHZ
+    str r1,[r0]
+
+/* enable ICACHE */
+    mrc p15,0,r0,c1,c0,0
+    orr r0,r0,#(1 << 12)
+    mcr p15,0,r0,c1,c0,0
 #endif	/* CONFIG_S3C24X0 */
 
+
+/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+/* I think below code is unused,i deleted it,so that board can not work. */
 	/*
 	 * we do sys-critical inits only at reboot,
 	 * not when booting from ram!
@@ -182,103 +202,36 @@ copyex:
 	bl	cpu_init_crit
 #endif
 
-/* Set stackpointer in internal RAM to call board_init_f */
-call_board_init_f:
-	ldr	sp, =(CONFIG_SYS_INIT_SP_ADDR)
-	bic	sp, sp, #7 /* 8-byte alignment for ABI compliance */
-	ldr	r0,=0x00000000
-	bl	board_init_f
+	ldr sp, =(CONFIG_SYS_INIT_SP_ADDR)	/* sp = 30000f80 */
+	bic sp, sp, #7 /* 8-byte alignment for ABI compliance */
 
-/*------------------------------------------------------------------------------*/
+    bl ll_nand_init
+    bl led_on
+    mov r0,#0
+    ldr r1,_TEXT_BASE
+    ldr r2,_bss_start_ofs
+    bl copy_code_to_sdram
 
-/*
- * void relocate_code (addr_sp, gd, addr_moni)
- *
- * This "function" does not return, instead it continues in RAM
- * after relocating the monitor code.
- *
- */
-	.globl	relocate_code
-relocate_code:
-	mov	r4, r0	/* save addr_sp */
-	mov	r5, r1	/* save addr of gd */
-	mov	r6, r2	/* save addr of destination */
-
-	/* Set up the stack						    */
-stack_setup:
-	mov	sp, r4
-
-	adr	r0, _start
-	cmp	r0, r6
-	beq	clear_bss		/* skip relocation */
-	mov	r1, r6			/* r1 <- scratch for copy_loop */
-	ldr	r3, _bss_start_ofs
-	add	r2, r0, r3		/* r2 <- source end address	    */
-
-copy_loop:
-	ldmia	r0!, {r9-r10}		/* copy from source address [r0]    */
-	stmia	r1!, {r9-r10}		/* copy to   target address [r1]    */
-	cmp	r0, r2			/* until source end address [r2]    */
-	blo	copy_loop
-
-#ifndef CONFIG_SPL_BUILD
-	/*
-	 * fix .rel.dyn relocations
-	 */
-	ldr	r0, _TEXT_BASE		/* r0 <- Text base */
-	sub	r9, r6, r0		/* r9 <- relocation offset */
-	ldr	r10, _dynsym_start_ofs	/* r10 <- sym table ofs */
-	add	r10, r10, r0		/* r10 <- sym table in FLASH */
-	ldr	r2, _rel_dyn_start_ofs	/* r2 <- rel dyn start ofs */
-	add	r2, r2, r0		/* r2 <- rel dyn start in FLASH */
-	ldr	r3, _rel_dyn_end_ofs	/* r3 <- rel dyn end ofs */
-	add	r3, r3, r0		/* r3 <- rel dyn end in FLASH */
-fixloop:
-	ldr	r0, [r2]		/* r0 <- location to fix up, IN FLASH! */
-	add	r0, r0, r9		/* r0 <- location to fix up in RAM */
-	ldr	r1, [r2, #4]
-	and	r7, r1, #0xff
-	cmp	r7, #23			/* relative fixup? */
-	beq	fixrel
-	cmp	r7, #2			/* absolute fixup? */
-	beq	fixabs
-	/* ignore unknown type of fixup */
-	b	fixnext
-fixabs:
-	/* absolute fix: set location to (offset) symbol value */
-	mov	r1, r1, LSR #4		/* r1 <- symbol index in .dynsym */
-	add	r1, r10, r1		/* r1 <- address of symbol in table */
-	ldr	r1, [r1, #4]		/* r1 <- symbol value */
-	add	r1, r1, r9		/* r1 <- relocated sym addr */
-	b	fixnext
-fixrel:
-	/* relative fix: increase location by offset */
-	ldr	r1, [r0]
-	add	r1, r1, r9
-fixnext:
-	str	r1, [r0]
-	add	r2, r2, #8		/* each rel.dyn entry is 8 bytes */
-	cmp	r2, r3
-	blo	fixloop
-#endif
-
+/* clean bss */
+    ldr r0,=__bss_start
+    ldr r1,=__bss_end__
+    mov r2,#0x00000000
+    
 clear_bss:
-#ifndef CONFIG_SPL_BUILD
-	ldr	r0, _bss_start_ofs
-	ldr	r1, _bss_end_ofs
-	mov	r4, r6			/* reloc addr */
-	add	r0, r0, r4
-	add	r1, r1, r4
-	mov	r2, #0x00000000		/* clear			    */
+    str r2,[r0],#4
+    cmp r0,r1
+    ble clear_bss
 
-clbss_l:str	r2, [r0]		/* clear loop...		    */
-	add	r0, r0, #4
-	cmp	r0, r1
-	bne	clbss_l
+    ldr pc,=call_board_init_f
 
-	bl coloured_LED_init
-	bl red_led_on
-#endif
+call_board_init_f:
+	ldr	r0,=0x00000000
+	bl board_init_f
+
+    /* return value of board_init_f will be saved in r0,pass it to board_init_r*/
+    ldr r1,_TEXT_BASE
+    ldr sp,base_sp
+    bl board_init_r
 
 /*
  * We are done. Do not return, instead branch to second part of board
@@ -518,3 +471,15 @@ fiq:
 	bl	do_fiq
 
 #endif
+
+/* for debug */
+led_on:
+    ldr r0,=0x56000050
+    mov r1,#0x00000100
+    str r1,[r0]
+    ldr r0,=0x56000054
+    mov r1,#0x00000000
+    str r1,[r0]
+    mov pc,lr
+
+

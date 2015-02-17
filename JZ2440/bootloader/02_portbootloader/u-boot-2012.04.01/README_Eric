@@ -1,0 +1,10 @@
+1. new a board for 2440 based on u-boot-2012.04.01
+    cd board/samsung/
+    cp smdk2410 smdk2440 -r
+    cd ../../include/configs
+    cp smdk2410.h smdk2440.h
+  modify boards.cfg
+    add smdk2440
+2. clock setting is wrong in origin source. setup clock in start.S, not in board_early_init_f
+3. serial output is wrong.It seem that not define CONFIG_S3C2440 macro,so define CONFIG_S3C2440,disable CONFIG_S3C2410 in include/configs/smdk2440.h file
+4. build error(nand code error),disable CONFIG_CMD_NAND macro

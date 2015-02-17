@@ -70,7 +70,8 @@ PLATFORM_LIBS := $(OBJTREE)/arch/arm/lib/eabi_compat.o \
 endif
 endif
 
+# rm by Eric
 # needed for relocation
 ifndef CONFIG_NAND_SPL
-LDFLAGS_u-boot += -pie
+#LDFLAGS_u-boot += -pie
 endif
