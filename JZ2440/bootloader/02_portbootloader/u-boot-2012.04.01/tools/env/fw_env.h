@@ -43,6 +43,7 @@
 
 #define CONFIG_BAUDRATE		115200
 #define CONFIG_BOOTDELAY	5	/* autoboot after 5 seconds	*/
+
 #define CONFIG_BOOTCOMMAND							\
 	"bootp; "								\
 	"setenv bootargs root=/dev/nfs nfsroot=${serverip}:${rootpath} "	\

@@ -58,9 +58,17 @@
 /*
  * Hardware drivers
  */
+ #if 0 // Eric
 #define CONFIG_CS8900		/* we have a CS8900 on-board */
 #define CONFIG_CS8900_BASE	0x19000300
 #define CONFIG_CS8900_BUS16	/* the Linux driver does accesses as shorts */
+#else
+#define CONFIG_DRIVER_DM9000
+#define CONFIG_DM9000_BASE      0x20000000
+#define DM9000_IO           CONFIG_DM9000_BASE
+#define DM9000_DATA         (CONFIG_DM9000_BASE + 4)
+
+#endif
 
 /*
  * select serial console configuration
@@ -71,19 +79,22 @@
 /************************************************************
  * USB support (currently only works with D-cache off)
  ************************************************************/
+#if 0 // Eric
 #define CONFIG_USB_OHCI
 #define CONFIG_USB_KEYBOARD
 #define CONFIG_USB_STORAGE
 #define CONFIG_DOS_PARTITION
 
+
 /************************************************************
  * RTC
  ************************************************************/
 #define CONFIG_RTC_S3C24X0
-
+#endif
 
 #define CONFIG_BAUDRATE		115200
 
+#if 0 //Eric
 /*
  * BOOTP options
  */
@@ -91,7 +102,7 @@
 #define CONFIG_BOOTP_BOOTPATH
 #define CONFIG_BOOTP_GATEWAY
 #define CONFIG_BOOTP_HOSTNAME
-
+#endif
 /*
  * Command line configuration.
  */
@@ -99,14 +110,17 @@
 
 #define CONFIG_CMD_BSP
 #define CONFIG_CMD_CACHE
+#if 0 //Eric
 #define CONFIG_CMD_DATE
 #define CONFIG_CMD_DHCP
+#endif
 #define CONFIG_CMD_ELF
 #define CONFIG_CMD_NAND
 #define CONFIG_CMD_PING
 #define CONFIG_CMD_REGINFO
+#if 0 //Eric
 #define CONFIG_CMD_USB
-
+#endif
 #define CONFIG_SYS_HUSH_PARSER
 #define CONFIG_SYS_PROMPT_HUSH_PS2	"> "
 #define CONFIG_CMDLINE_EDITING
@@ -117,21 +131,34 @@
 #define CONFIG_RESET_TO_RETRY
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 
+#define CONFIG_BOOTARGS "console=ttySAC0 root=/dev/mtdblock3"
+#define CONFIG_BOOTCOMMAND "nand read 30000000 kernel;bootm 30000000"
+
 #define CONFIG_NETMASK		255.255.255.0
-#define CONFIG_IPADDR		10.0.0.110
-#define CONFIG_SERVERIP		10.0.0.1
+#define CONFIG_IPADDR		192.168.1.200
+#define CONFIG_SERVERIP		192.168.1.99
+#define CONFIG_ETHADDR		00:0c:29:4d:e4:f4
 
 #if defined(CONFIG_CMD_KGDB)
 #define CONFIG_KGDB_BAUDRATE	115200	/* speed to run kgdb serial port */
 /* what's this ? it's not used anywhere */
 #define CONFIG_KGDB_SER_INDEX	2	/* which serial port to use */
 #endif
+#define CONFIG_MTD_DEVICE
+#define CONFIG_CMD_MTDPARTS
+#define MTDIDS_DEFAULT		"nand0=jz2440-0"
+
+#define MTDPARTS_DEFAULT	"mtdparts=jz2440-0:256k(u-boot),"	\
+						"128k(params),"		\
+						"2m(kernel),"	\
+						"-(rootfs)"		\
+
 
 /*
  * Miscellaneous configurable options
  */
 #define CONFIG_SYS_LONGHELP		/* undef to save memory */
-#define CONFIG_SYS_PROMPT	"SMDK2410 # "
+#define CONFIG_SYS_PROMPT	"SMDK2440 # "
 #define CONFIG_SYS_CBSIZE	256
 /* Print Buffer Size */
 #define CONFIG_SYS_PBSIZE	(CONFIG_SYS_CBSIZE + \
@@ -192,12 +219,18 @@
 #define CONFIG_SYS_FLASH_BANKS_LIST     { CONFIG_SYS_FLASH_BASE }
 #define CONFIG_SYS_MAX_FLASH_SECT	(40)
 
+#if 0
 #define CONFIG_ENV_ADDR			(CONFIG_SYS_FLASH_BASE + 0x070000)
 #define CONFIG_ENV_IS_IN_FLASH
 #define CONFIG_ENV_SIZE			0x10000
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
-
+#else
+#define CONFIG_ENV_IS_IN_NAND
+#define CONFIG_ENV_OFFSET		0x00040000
+#define CONFIG_ENV_SIZE			0x20000
+#define CONFIG_ENV_RANGE		CONFIG_ENV_SIZE
+#endif
 /*
  * Size of malloc() pool
  * BZIP2 / LZO / LZMA need a lot of RAM
@@ -229,6 +262,7 @@
 /*
  * File system
  */
+ #if 0 //Eric
 #define CONFIG_CMD_FAT
 #define CONFIG_CMD_EXT2
 #define CONFIG_CMD_UBI
@@ -238,7 +272,7 @@
 #define CONFIG_MTD_PARTITIONS
 #define CONFIG_YAFFS2
 #define CONFIG_RBTREE
-
+#endif
 /* additions for new relocation code, must be added to all boards */
 #define CONFIG_SYS_SDRAM_BASE	PHYS_SDRAM_1
 #define CONFIG_SYS_INIT_SP_ADDR	(CONFIG_SYS_SDRAM_BASE + 0x1000 - \
